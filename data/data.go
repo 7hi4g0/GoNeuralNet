@@ -43,16 +43,17 @@ func LoadIDXData(filename string) ([]*mat.Dense, []uint8) {
 		matrices := make([]*mat.Dense, count)
 
 		for matrix := uint32(0); matrix < count; matrix++ {
+			pixels := make([]uint8, dataSize)
+
+			err = binary.Read(file, binary.BigEndian, &pixels)
+			if err != nil {
+				panic(err)
+			}
+
 			data := make([]float64, dataSize)
 
-			for dataPoint := uint32(0); dataPoint < dataSize; dataPoint++ {
-				var pixel uint8
-				err = binary.Read(file, binary.BigEndian, &pixel)
-				if err != nil {
-					panic(err)
-				}
-
-				data[dataPoint] = float64(pixel) / 255
+			for idx, pixel := range pixels {
+				data[idx] = float64(pixel) / 255
 			}
 
 			matrices[matrix] = mat.NewDense(int(rows), int(columns), data)

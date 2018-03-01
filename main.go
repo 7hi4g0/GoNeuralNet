@@ -29,7 +29,7 @@ func main() {
 	fmt.Println("Loaded Test data")
 
 	nn := neural.NewClassificationNetwork(784, []uint{25}, 10)
-	nn.SetAlpha(0.001)
+	nn.SetAlpha(1)
 	nn.SetLambda(1)
 
 	rows, columns := TrainImages[0].Dims()
@@ -43,11 +43,20 @@ func main() {
 		UnrolledTrainImages.SetRow(idx, image.RawMatrix().Data)
 	}
 
-	cost, _ := nn.Cost(UnrolledTrainImages, neural.ConvertLabels(TrainLabels))
+	nn.Train(UnrolledTrainImages, neural.ConvertLabels(TrainLabels), 100)
 
-	//nn.Train(TrainImages, TrainLabels, 50)
+	rows, columns = TestImages[0].Dims()
 
-	//accuracy := nn.Accuracy(TestImages, TestLabels)
+	columns = rows * columns
+	rows = len(TestImages)
 
-	fmt.Println(cost)
+	UnrolledTestImages := mat.NewDense(rows, columns, nil)
+
+	for idx, image := range TestImages {
+		UnrolledTestImages.SetRow(idx, image.RawMatrix().Data)
+	}
+
+	accuracy := nn.Accuracy(UnrolledTestImages, TestLabels)
+
+	fmt.Println("Accuracy", accuracy)
 }
