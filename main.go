@@ -28,13 +28,26 @@ func main() {
 	_, TestLabels = data.LoadIDXData("data/t10k-labels-idx1-ubyte")
 	fmt.Println("Loaded Test data")
 
-	nn := neural.NewClassificationNetwork(400, []uint{25}, 10)
+	nn := neural.NewClassificationNetwork(784, []uint{25}, 10)
 	nn.SetAlpha(0.001)
 	nn.SetLambda(1)
 
-	nn.Train(TrainImages, TrainLabels, 50)
+	rows, columns := TrainImages[0].Dims()
 
-	accuracy := nn.Accuracy(TestImages, TestLabels)
+	columns = rows * columns
+	rows = len(TrainImages)
 
-	fmt.Println(accuracy)
+	UnrolledTrainImages := mat.NewDense(rows, columns, nil)
+
+	for idx, image := range TrainImages {
+		UnrolledTrainImages.SetRow(idx, image.RawMatrix().Data)
+	}
+
+	cost, _ := nn.Cost(UnrolledTrainImages, neural.ConvertLabels(TrainLabels))
+
+	//nn.Train(TrainImages, TrainLabels, 50)
+
+	//accuracy := nn.Accuracy(TestImages, TestLabels)
+
+	fmt.Println(cost)
 }
